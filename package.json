@@ -12,6 +12,7 @@
     ],
     "devDependencies": {
         "concurrently": "^5.2.0",
+        "prisma": "^4.9.0",
         "wsrun": "^5.2.0"
     }
 }

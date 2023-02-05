@@ -1,27 +1,17 @@
 import express from "express";
-import { inferAsyncReturnType, initTRPC } from "@trpc/server";
 import * as trpcExpress from '@trpc/server/adapters/express';
+import { createContext } from "./context";
+import { PrismaClient } from '@prisma/client'
+import cors from "cors";
+import * as dotenv from "dotenv";
+import { appRouter } from "./routers/_app";
 
-const createContext = ({
-  req, res
-}: trpcExpress.CreateExpressContextOptions) => ({});
-type Context = inferAsyncReturnType<typeof createContext>;
+dotenv.config();
 
-export const t = initTRPC.context<Context>().create();
-
-export const appRouter = t.router({
-  hello: t.procedure.query(() => {
-    return {
-      greeting: 'Hello World!'
-    }
-  })
-});
-
-export type AppRouter = typeof appRouter;
-
+export const prisma = new PrismaClient();
 
 const app = express();
-const port = 8080;
+app.use(cors());
 
 app.use('/trpc', trpcExpress.createExpressMiddleware({
   router: appRouter,
@@ -29,10 +19,7 @@ app.use('/trpc', trpcExpress.createExpressMiddleware({
 })
 );
 
-app.get("/", (req, res) => {
-  res.send("Hello from server");
-});
-
+const port = 8080;
 app.listen(port, () => {
   console.log(`server listening at http://localhost:${port}`);
 });
