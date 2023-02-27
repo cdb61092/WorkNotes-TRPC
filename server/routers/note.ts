@@ -1,10 +1,9 @@
-import { router, publicProcedure, protectedProcedure } from '../trpc';
-import { TRPCError } from '@trpc/server';
+import { router, protectedProcedure } from '../trpc';
 import { z } from 'zod';
 import { prisma } from '../index';
 
 export const noteRouter = router({
-    create: publicProcedure
+    create: protectedProcedure
         .input(
             z.object({
                 title: z.string(),
@@ -12,18 +11,14 @@ export const noteRouter = router({
                 tags: z.array(z.string()),
             }))
             .mutation(async ({ input, ctx }) => {
-                console.log('inside mutation');
-                if (ctx.user) {
-                    return prisma.note.create({
-                        data: {
-                            title: input.title,
-                            content: input.content,
-                            tags: input.tags,
-                            user_id: ctx.user.id,
-                        }
-                    })
-                }
-                throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Invalid token' });
+                return prisma.note.create({
+                    data: {
+                        title: input.title,
+                        content: input.content,
+                        tags: input.tags,
+                        user_id: ctx.user.id,
+                    }
+                })
             }),
             getNotes: protectedProcedure.query(async ({ctx}) => {
                 return prisma.note.findMany({

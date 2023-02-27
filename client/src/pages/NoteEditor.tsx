@@ -8,12 +8,24 @@ import TextAlign from '@tiptap/extension-text-align';
 import Superscript from '@tiptap/extension-superscript';
 import SubScript from '@tiptap/extension-subscript';
 import { trpc } from '../utils/trpc';
+import { Flex, Badge, Box } from '@mantine/core';
+import { Notes } from '../components/Notes';
+import { useNotes } from '../hooks/useNotes';
 
 export const NoteEditor = () => {
-	const [title, setTitle] = useState('');
-	const [content, setContent] = useState('');
-	const [tags, setTags] = useState<string[]>([]);
-	const [tag, setTag] = useState('');
+	const {
+		content,
+		notes,
+		tag,
+		tags,
+		title,
+		setContent,
+		setTag,
+		setTags,
+		setTitle,
+		filterTags,
+		createNote,
+	} = useNotes();
 	const editor = useEditor({
 		extensions: [
 			StarterKit,
@@ -30,98 +42,91 @@ export const NoteEditor = () => {
 		},
 	});
 
-	useEffect(() => {
-		console.log(tags);
-	}, [tags]);
-
-	console.log(content);
-
-	const noteMutation = trpc.create.useMutation({
-		onSuccess: (data) => {
-			console.log(data);
-		},
-		onError: (error) => {
-			console.error(error);
-		},
-	});
-
-	const createNote = () => {
-		noteMutation.mutate({
-			title,
-			content,
-			tags,
-		});
-	};
-
 	return (
-		<>
-			<input
-				type="text"
-				value={title}
-				onChange={(e) => setTitle(e.target.value)}
-			/>
-			<RichTextEditor editor={editor} style={{ background: 'blue' }}>
-				<RichTextEditor.Toolbar sticky>
-					<RichTextEditor.ControlsGroup>
-						<RichTextEditor.Bold />
-						<RichTextEditor.Italic />
-						<RichTextEditor.Underline />
-						<RichTextEditor.Strikethrough />
-						<RichTextEditor.ClearFormatting />
-						<RichTextEditor.Highlight />
-						<RichTextEditor.Code />
-					</RichTextEditor.ControlsGroup>
+		<Flex>
+			<Notes notes={notes} />
+			<Box>
+				<input
+					type="text"
+					placeholder="Title"
+					value={title}
+					onChange={(e) => setTitle(e.target.value)}
+				/>
+				<RichTextEditor editor={editor} style={{ background: 'blue' }}>
+					<RichTextEditor.Toolbar sticky>
+						<RichTextEditor.ControlsGroup>
+							<RichTextEditor.Bold />
+							<RichTextEditor.Italic />
+							<RichTextEditor.Underline />
+							<RichTextEditor.Strikethrough />
+							<RichTextEditor.ClearFormatting />
+							<RichTextEditor.Highlight />
+							<RichTextEditor.Code />
+						</RichTextEditor.ControlsGroup>
 
-					<RichTextEditor.ControlsGroup>
-						<RichTextEditor.H1 />
-						<RichTextEditor.H2 />
-						<RichTextEditor.H3 />
-						<RichTextEditor.H4 />
-					</RichTextEditor.ControlsGroup>
+						<RichTextEditor.ControlsGroup>
+							<RichTextEditor.H1 />
+							<RichTextEditor.H2 />
+							<RichTextEditor.H3 />
+							<RichTextEditor.H4 />
+						</RichTextEditor.ControlsGroup>
 
-					<RichTextEditor.ControlsGroup>
-						<RichTextEditor.Blockquote />
-						<RichTextEditor.Hr />
-						<RichTextEditor.BulletList />
-						<RichTextEditor.OrderedList />
-						<RichTextEditor.Subscript />
-						<RichTextEditor.Superscript />
-					</RichTextEditor.ControlsGroup>
+						<RichTextEditor.ControlsGroup>
+							<RichTextEditor.Blockquote />
+							<RichTextEditor.Hr />
+							<RichTextEditor.BulletList />
+							<RichTextEditor.OrderedList />
+							<RichTextEditor.Subscript />
+							<RichTextEditor.Superscript />
+						</RichTextEditor.ControlsGroup>
 
-					<RichTextEditor.ControlsGroup>
-						<RichTextEditor.Link />
-						<RichTextEditor.Unlink />
-					</RichTextEditor.ControlsGroup>
+						<RichTextEditor.ControlsGroup>
+							<RichTextEditor.Link />
+							<RichTextEditor.Unlink />
+						</RichTextEditor.ControlsGroup>
 
-					<RichTextEditor.ControlsGroup>
-						<RichTextEditor.AlignLeft />
-						<RichTextEditor.AlignCenter />
-						<RichTextEditor.AlignJustify />
-						<RichTextEditor.AlignRight />
-					</RichTextEditor.ControlsGroup>
-				</RichTextEditor.Toolbar>
+						<RichTextEditor.ControlsGroup>
+							<RichTextEditor.AlignLeft />
+							<RichTextEditor.AlignCenter />
+							<RichTextEditor.AlignJustify />
+							<RichTextEditor.AlignRight />
+						</RichTextEditor.ControlsGroup>
+					</RichTextEditor.Toolbar>
 
-				<RichTextEditor.Content />
-			</RichTextEditor>
-			<input
-				type="text"
-				value={tag}
-				onChange={(e) => setTag(e.target.value)}
-				onKeyDown={(e) => {
-					if (e.key === 'Enter') {
-						setTags(() => [...tags, tag]);
-						setTag('');
-					}
-				}}
-			/>
-			<div>
-				{tags.map((tag) => (
-					<div key={tag}>{tag}</div>
-				))}
-			</div>
-			<div>
-				<button onClick={createNote}>Create Note</button>
-			</div>
-		</>
+					<RichTextEditor.Content />
+				</RichTextEditor>
+				<input
+					type="text"
+					placeholder="Tags..."
+					value={tag}
+					onChange={(e) => setTag(e.target.value)}
+					onKeyDown={(e) => {
+						if (e.key === 'Enter') {
+							setTags(() => [...tags, tag]);
+							setTag('');
+						}
+					}}
+				/>
+				<Flex gap={10}>
+					{tags.map((tag) => (
+						<Badge
+							variant="filled"
+							color={
+								['cyan', 'teal', 'yellow', 'orange', 'grape', 'red', 'pink'][
+									Math.floor(Math.random() * 7)
+								]
+							}
+							key={tag}
+							rightSection={<button onClick={() => filterTags(tag)}>x</button>}
+						>
+							{tag}
+						</Badge>
+					))}
+				</Flex>
+				<div>
+					<button onClick={createNote}>Create Note</button>
+				</div>
+			</Box>
+		</Flex>
 	);
 };
