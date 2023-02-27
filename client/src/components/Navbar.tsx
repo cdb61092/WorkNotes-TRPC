@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import React from 'react';
+import { redirect, useNavigate, useLocation } from 'react-router-dom';
 import {
 	Navbar as MantineNavbar,
 	Center,
@@ -19,6 +20,7 @@ import {
 	IconSettings,
 	IconLogout,
 	IconSwitchHorizontal,
+	IconClipboardText,
 } from '@tabler/icons-react';
 
 //@ts-ignore
@@ -79,24 +81,29 @@ function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
 }
 
 const mockdata = [
-	{ icon: IconHome2, label: 'Home' },
-	{ icon: IconGauge, label: 'Dashboard' },
-	{ icon: IconDeviceDesktopAnalytics, label: 'Analytics' },
-	{ icon: IconCalendarStats, label: 'Releases' },
-	{ icon: IconUser, label: 'Account' },
-	{ icon: IconFingerprint, label: 'Security' },
-	{ icon: IconSettings, label: 'Settings' },
+	{ icon: IconHome2, label: 'Home', route: '/' },
+	{ icon: IconClipboardText, label: 'Notes', route: '/notes' },
+	// { icon: IconDeviceDesktopAnalytics, label: 'Analytics' },
+	// { icon: IconCalendarStats, label: 'Releases' },
+	// { icon: IconUser, label: 'Account' },
+	// { icon: IconFingerprint, label: 'Security' },
+	// { icon: IconSettings, label: 'Settings' },
 ];
 
 export function Navbar() {
 	const [active, setActive] = useState(2);
+	const navigate = useNavigate();
+	const location = useLocation();
 
 	const links = mockdata.map((link, index) => (
 		<NavbarLink
 			{...link}
 			key={link.label}
-			active={index === active}
-			onClick={() => setActive(index)}
+			active={location.pathname === link.route}
+			onClick={() => {
+				console.log('clicked');
+				navigate(link.route);
+			}}
 		/>
 	));
 

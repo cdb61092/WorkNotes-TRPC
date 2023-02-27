@@ -7,7 +7,6 @@ import jwt from 'jsonwebtoken';
 export const createContext = async ({
 	req,
 }: trpcExpress.CreateExpressContextOptions) => {
-	console.log('user inside context');
 	async function getUserFromHeader() {
 		if (req.headers.authorization) {
 			const token = req.headers.authorization;
